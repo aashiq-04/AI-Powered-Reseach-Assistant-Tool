@@ -1,0 +1,16 @@
+pypdf
+langchain_community
+langchain_openai 
+langchain_core
+python-dotenv
+pinecone-client 
+sentence-transformers
+PyPDF2
+langchain-huggingface
+bs4
+fastapi 
+uvicorn 
+langchain_groq
+langchain_text_splitters
+pytesseract
+faiss-gpu
