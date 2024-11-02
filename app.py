@@ -145,7 +145,7 @@ async def query_documents(question: Question):
     return {"answer": response['answer'], "context": response["context"]}
 
 def extract_text_from_pdf(contents):
-    # Use PyPDF2 to extract text from the PDF
+    # Use PyPDF2 to extract text from th PDF
     reader = PyPDF2.PdfReader(contents)
     text = ""
     for page in reader.pages:
