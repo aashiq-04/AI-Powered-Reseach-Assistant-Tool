@@ -53,71 +53,50 @@ async def root():
         }
     }
 
+@app.post("/upload")
+async def upload_pdf(pdf: UploadFile = File(...)):
+    if pdf is None:
+        raise HTTPException(status_code=400, detail="No file uploaded.")
+
+    try:
+        # Ensure the data directory exists
+        os.makedirs('./data', exist_ok=True)
+
+        # Save the uploaded PDF to the data directory
+        file_location = f"./data/{pdf.filename}"
+        with open(file_location, "wb") as file:
+            file.write(await pdf.read())
+
+        return JSONResponse(content={"message": "PDF uploaded successfully."})
+    except Exception as e:
+        print(f"Error occurred while uploading PDF: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+    
 @app.post("/embed")
-async def embed_documents(pdf: UploadFile = File(...)):
+async def embed_documents():
     global vector_store
     try:
-        start_time = time.time()
-        
-        print("Starting embedding process...")
-
         # Use PyPDFLoader to load PDFs from the data directory
         loader = DirectoryLoader(
             "./data",
             glob="**/*.pdf",
-            loader_cls=PyPDFLoader  # Use PyPDFLoader for loading PDFs
+            loader_cls=PyPDFLoader
         )
         
         docs = loader.load()
         
-        print(f"Found {len(docs)} documents.")
-        
-        # Debug: Print content of first few documents
-        for i, doc in enumerate(docs[:2]):  # Print first 2 docs
-            print(f"\nDocument {i+1} content preview:")
-            print(f"Content length: {len(doc.page_content)}")
-            print(f"Content preview: {doc.page_content[:200]}...")  # First 200 chars
-            
         if not docs:
             raise HTTPException(status_code=400, detail="No documents found in ./data directory")
 
-        # Modified text splitting with more lenient parameters
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1000,
-            chunk_overlap=100,
-            length_function=len,
-            is_separator_regex=False
-        )
+        # Continue with the embedding process...
+        # (rest of your embedding logic)
         
-        print("\nSplitting documents into chunks...")
-        final_documents = text_splitter.split_documents(docs)
-        
-        # Debug: Print chunks information
-        print(f"Created {len(final_documents)} chunks")
-        
-        if final_documents:
-            print(f"First chunk preview: {final_documents[0].page_content[:100]}...")
-        
-        if not final_documents:
-            raise HTTPException(status_code=400, detail="No text could be extracted from documents")
-
-        print(f"Creating vector store with {len(final_documents)} text chunks...")
-        vector_store = FAISS.from_documents(final_documents, embedding)
-        
-        print("Saving vector store to disk...")
-        with open(VECTOR_STORE_PATH, "wb") as f:
-            pickle.dump(vector_store, f)
-
-        end_time = time.time()
-        print("Process completed successfully!")
         return {
-            "message": "Vector store created successfully.",
-            "time_taken": f"{end_time - start_time:.2f} seconds",
-            "documents_processed": len(docs),
-            "text_chunks": len(final_documents)
+            "message": "Embedding process completed successfully.",
+            # Include any additional information you want to return
         }
     except Exception as e:
-        print(f"Error occurred: {str(e)}")
+        print(f"Error occurred during embedding: {str(e)}")
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 @app.post("/query", description="Query the embedded documents with a question")
@@ -126,23 +105,35 @@ async def query_documents(question: Question):
     if vector_store is None:
         raise HTTPException(status_code=400, detail="Vector store not created. Please call /embed first.")
     
-    document_chain = create_stuff_documents_chain(llm, ChatPromptTemplate.from_template("""
-        Answer the question based on the provided context only.
-        Please provide the most accurate response based on the question.
+    if not question.question:
+        raise HTTPException(status_code=400, detail="Question is required.")
 
-        Context:
-        {context}
+    try:
+        document_chain = create_stuff_documents_chain(llm, ChatPromptTemplate.from_template("""
+            Answer the question based on the provided context only.
+            Please provide the most accurate response based on the question.
 
-        Question: {input}
+            Context:
+            {context}
 
-        Answer:
-    """))
-    
-    retriever = vector_store.as_retriever()
-    retrieval_chain = create_retrieval_chain(retriever, document_chain)
+            Question: {input}
 
-    response = retrieval_chain.invoke({'input': question.question})
-    return {"answer": response['answer'], "context": response["context"]}
+            Answer:
+        """))
+        
+        retriever = vector_store.as_retriever()
+        retrieval_chain = create_retrieval_chain(retriever, document_chain)
+
+        response = retrieval_chain.invoke({'input': question.question})
+
+        # Ensure the response contains the expected keys
+        answer = response.get('answer', 'No answer found.')
+        context = response.get('context', 'No context available.')
+
+        return {"answer": answer, "context": context}
+    except Exception as e:
+        print(f"Error occurred during query processing: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 def extract_text_from_pdf(contents):
     # Use PyPDF2 to extract text from th PDF

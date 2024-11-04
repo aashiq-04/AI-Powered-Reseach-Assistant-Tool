@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const UploadPDF = () => {
@@ -11,28 +11,57 @@ const UploadPDF = () => {
     setFile(e.target.files[0]);
   };
 
-  const handleUpload = async (file) => {
-    setIsLoading(true);
-    setMessage('');
+  const handleUpload = async () => {
+    if (!file) return;
 
     const formData = new FormData();
     formData.append('pdf', file);
 
     try {
-      const response = await fetch('http://localhost:8000/embed', {
+      const response = await fetch('http://localhost:8000/upload', {
         method: 'POST',
         body: formData,
       });
 
-      const data = await response.json();
-      setMessage(data.message || 'File uploaded and processed successfully!');
+      console.log('Response:', response);
 
-      if (response.ok) {
-        navigate('/query');
+      if (!response.ok) {
+        const errorData = await response.json();
+        setMessage(`Error uploading PDF: ${errorData.detail || 'Unknown error'}`);
+        return;
       }
+
+      const data = await response.json();
+      setMessage(data.message || 'File uploaded successfully!');
     } catch (error) {
       console.error('Error uploading PDF:', error);
       setMessage('Error uploading PDF');
+    }
+  };
+
+  const handleEmbed = async () => {
+    setIsLoading(true);
+    setMessage('');
+
+    try {
+      const response = await fetch('http://localhost:8000/embed', {
+        method: 'POST',
+      });
+
+      console.log('Response:', response);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setMessage(`Error embedding documents: ${errorData.message || 'Unknown error'}`);
+        return;
+      }
+
+      const data = await response.json();
+      setMessage(data.message || 'Embedding process completed successfully!');
+      navigate('/query'); // Navigate to the query page after embedding
+    } catch (error) {
+      console.error('Error embedding documents:', error);
+      setMessage('Error embedding documents');
     } finally {
       setIsLoading(false);
     }
@@ -60,6 +89,13 @@ const UploadPDF = () => {
           disabled={!file || isLoading}
         >
           {isLoading ? 'Uploading...' : 'Upload PDF'}
+        </button>
+        <button 
+          className="embed-button" 
+          onClick={handleEmbed}
+          disabled={isLoading}
+        >
+          {isLoading ? 'Embedding...' : 'Start Embedding'}
         </button>
         {isLoading && <div className="loading">Loading, please wait...</div>}
         {message && <div className="message">{message}</div>}

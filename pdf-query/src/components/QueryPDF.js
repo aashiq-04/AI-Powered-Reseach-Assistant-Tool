@@ -12,6 +12,12 @@ const QueryPDF = () => {
     setIsLoading(true);
     setError(null);
 
+    if (!question.trim()) {
+      setError('Please enter a question.');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const data = await apiService.queryDocuments(question);
       setAnswer(data.answer);
