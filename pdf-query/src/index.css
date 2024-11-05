@@ -86,7 +86,7 @@ code {
 }
 
 .nav-button:hover {
-  background-color: #0056b3;
+  background-color: #196cc5;
 }
 
 .home-container h1 {
@@ -100,11 +100,11 @@ code {
   align-items: center;
   height: 100vh;
   /* padding: 2rem; */
-  background-color: #0e1011;
+  background-color: #14313f;
 }
 
 .upload-box {
-  background: white;
+  background: rgb(166, 164, 164);
   padding: 2rem;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
