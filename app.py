@@ -103,7 +103,7 @@ async def embed_documents():
 async def query_documents(question: Question):
     global vector_store
     if vector_store is None:
-        raise HTTPException(status_code=400, detail="Vector store not created. Please call /embed first.")
+        raise HTTPException(status_code=400, detail="Vector store not created. Please call /embed url first.")
     
     if not question.question:
         raise HTTPException(status_code=400, detail="Question is required.")
