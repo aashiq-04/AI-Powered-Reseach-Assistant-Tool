@@ -76,28 +76,49 @@ async def upload_pdf(pdf: UploadFile = File(...)):
 async def embed_documents():
     global vector_store
     try:
-        # Use PyPDFLoader to load PDFs from the data directory
+        # Initialize the embeddings and document loader
+        embedding = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
         loader = DirectoryLoader(
             "./data",
             glob="**/*.pdf",
             loader_cls=PyPDFLoader
         )
         
+        # Load documents
         docs = loader.load()
         
         if not docs:
-            raise HTTPException(status_code=400, detail="No documents found in ./data directory")
+            raise HTTPException(status_code=400, detail="No documents found in the specified directory. Please check the path and ensure there are PDF files present.")
 
-        # Continue with the embedding process...
-        # (rest of your embedding logic)
+        # Split documents into chunks
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+        final_documents = text_splitter.split_documents(docs)
         
+        if not final_documents:
+            raise HTTPException(status_code=400, detail="No text could be extracted from the documents. Please check the content of the PDF files.")
+
+        # Create the vector store from the final documents
+        vector_store = FAISS.from_documents(final_documents, embedding)
+
+        # Save the vector store to a file
+        with open(VECTOR_STORE_PATH, 'wb') as f:
+            pickle.dump(vector_store, f)
+
         return {
             "message": "Embedding process completed successfully.",
-            # Include any additional information you want to return
         }
     except Exception as e:
         print(f"Error occurred during embedding: {str(e)}")
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+
+# Load the vector store at startup
+def load_vector_store():
+    global vector_store
+    if os.path.exists(VECTOR_STORE_PATH):
+        with open(VECTOR_STORE_PATH, 'rb') as f:
+            vector_store = pickle.load(f)
+    else:
+        vector_store = None  # Initialize as None if the file does not exist
 
 @app.post("/query", description="Query the embedded documents with a question")
 async def query_documents(question: Question):
@@ -144,5 +165,6 @@ def extract_text_from_pdf(contents):
     return text
 
 if __name__ == "__main__":
+    load_vector_store()  # Load the vector store when the app starts
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8000)
