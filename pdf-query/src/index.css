@@ -99,6 +99,7 @@ code {
   justify-content: center;
   align-items: center;
   height: 100vh;
+  width: 100%;
   /* padding: 2rem; */
   background-color: #14313f;
 }
@@ -110,12 +111,12 @@ code {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   text-align: center;
   width: 100%;
-  max-width: 400px;
+  max-width: 450px;
 }
 
 h2 {
   color: #333;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .file-input-wrapper {
@@ -131,7 +132,7 @@ h2 {
 .file-label {
   display: block;
   padding: 0.8rem 1.2rem;
-  background: #f0f0f0;
+  background: #62a219;
   border: 2px dashed #ccc;
   border-radius: 6px;
   cursor: pointer;
@@ -140,7 +141,7 @@ h2 {
 
 .file-label:hover {
   border-color: #666;
-  background: #e8e8e8;
+  background: #43b324;
 }
 
 .upload-button {
@@ -166,11 +167,24 @@ h2 {
   width: 100%;
   height: 40%;
 }
-.subBut{
-  padding:3px;
+.subBut {
+  padding: 3px;
   margin: 1%;
   width: 10em;
   height: 3em;
+}
+.embed-button {
+  margin-top: 15px;
+  background-color: #3e6a80;
+  width: 12em;
+  height: 3em;
+  padding: 5px;
+  border: none;
+  border-radius: 3px;
+}
+.embed-button:hover {
+  background-color: cadetblue;
+  border: #007bff;
 }
 .Div-al {
   display: flex;
@@ -181,7 +195,7 @@ h2 {
   height: 10vh;
   margin-bottom: 2px;
 }
-.answer{
+.answer {
   background-color: #ccc;
   text-decoration-color: #0e1011;
   margin-bottom: 10px;
