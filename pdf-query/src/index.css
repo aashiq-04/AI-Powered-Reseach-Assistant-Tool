@@ -184,7 +184,7 @@ h2 {
 }
 .embed-button:hover {
   background-color: cadetblue;
-  border: #007bff;
+  border: none;
 }
 .Div-al {
   display: flex;
