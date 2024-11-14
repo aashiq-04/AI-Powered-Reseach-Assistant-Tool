@@ -1,4 +1,4 @@
-# AI-Powered PDF Query Application
+# AI-Powered PDF Query Application.
 
 ## Overview
 This project is a web application that allows users to upload PDF files, embed the document data into a vector store, and query the embedded documents to receive relevant responses. The project uses **FastAPI** for the backend and **ReactJS** for the frontend. **LangChain** is employed for text embedding and retrieval.
