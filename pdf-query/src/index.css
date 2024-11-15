@@ -64,6 +64,10 @@ code {
   height: 100vh;
   box-sizing: border-box;
   background-color: #0e1011;
+  background-image: url("./image/web.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .head1 {
