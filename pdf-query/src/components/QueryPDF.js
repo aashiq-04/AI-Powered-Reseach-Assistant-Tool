@@ -30,7 +30,7 @@ const QueryPDF = () => {
   };
 
   return (
-    <div className="home-container">
+    <div className="home-container-q">
       <nav className='navigation'>
         <div className='al'>
           <a className='homeLink' href="/">Home</a>
