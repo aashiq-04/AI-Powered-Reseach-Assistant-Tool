@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { apiService } from "../services/api";
 
-const QueryPDF = () => {
+const QueryPDF = ({ isEmbedded }) => {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -11,6 +11,12 @@ const QueryPDF = () => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+
+    if (!isEmbedded) {
+      setError('Please embed the document first.');
+      setIsLoading(false);
+      return;
+    }
 
     if (!question.trim()) {
       setError('Please enter a question.');

@@ -16,8 +16,12 @@ import time
 from fastapi.middleware.cors import CORSMiddleware
 import PyPDF2  # Ensure you have this installed
 from langchain_community.document_loaders import DirectoryLoader, PyPDFLoader
+import shutil
 
 load_dotenv()
+
+# Define the temporary directory path
+TEMP_DIR = "./data"
 
 app = FastAPI()
 
@@ -43,6 +47,26 @@ class Question(BaseModel):
 
 VECTOR_STORE_PATH = "vector_store.pkl"
 
+# Function to create the temporary directory
+def create_temp_directory():
+    if not os.path.exists(TEMP_DIR):
+        os.makedirs(TEMP_DIR)
+
+# Function to clear the temporary directory
+def clear_temp_directory():
+    if os.path.exists(TEMP_DIR):
+        shutil.rmtree(TEMP_DIR)  # Remove the directory and its contents
+        os.makedirs(TEMP_DIR)     # Recreate the directory
+
+@app.on_event("startup")
+async def startup_event():
+    create_temp_directory()  # Create the temp directory on startup
+    clear_temp_directory()    # Clear any existing files
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    clear_temp_directory()  # Clear the temp directory on shutdown
+
 @app.get("/")
 async def root():
     return {
@@ -56,14 +80,11 @@ async def root():
 @app.post("/upload")
 async def upload_pdf(pdf: UploadFile = File(...)):
     if pdf is None:
-        raise HTTPException(status_code=400, detail="No file uploaded.")
+        return JSONResponse(content={"message": "No file uploaded."}, status_code=400)
 
     try:
-        # Ensure the data directory exists
-        os.makedirs('./data', exist_ok=True)
-
-        # Save the uploaded PDF to the data directory
-        file_location = f"./data/{pdf.filename}"
+        # Save the uploaded PDF to the temporary directory
+        file_location = os.path.join(TEMP_DIR, pdf.filename)
         with open(file_location, "wb") as file:
             file.write(await pdf.read())
 
@@ -79,16 +100,16 @@ async def embed_documents():
         # Initialize the embeddings and document loader
         embedding = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
         loader = DirectoryLoader(
-            "./data",
+            TEMP_DIR,  # Use the 'data' directory for embedding
             glob="**/*.pdf",
             loader_cls=PyPDFLoader
         )
         
-        # Load documents
+        # Load documents from the temporary directory
         docs = loader.load()
         
         if not docs:
-            raise HTTPException(status_code=400, detail="No documents found in the specified directory. Please check the path and ensure there are PDF files present.")
+            raise HTTPException(status_code=400, detail="No documents found in the temporary directory. Please check the upload.")
 
         # Split documents into chunks
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
@@ -108,7 +129,7 @@ async def embed_documents():
             "message": "Embedding process completed successfully.",
         }
     except Exception as e:
-        print(f"Error occurred during embedding: {str(e)}")
+        print(f"Error occurred during embedding: {str(e)}")  # Log the error
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 # Load the vector store at startup
@@ -164,7 +185,12 @@ def extract_text_from_pdf(contents):
         text += page.extract_text() + "\n"
     return text
 
+
+
+                
 if __name__ == "__main__":
+    print("Starting the server and deleting uploaded PDFs...")
     load_vector_store()  # Load the vector store when the app starts
+    print("App is starting")
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8000)

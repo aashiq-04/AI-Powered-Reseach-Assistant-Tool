@@ -229,3 +229,7 @@ h2 {
   margin-top: 10px;
   color: green; /* Change to your preferred color */
 }
+.error{
+  margin-top: 5px;
+  color: red;
+}
