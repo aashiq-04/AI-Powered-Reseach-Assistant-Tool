@@ -16,7 +16,6 @@ This project is a web application that allows users to upload PDF files, embed t
 - **LangChain**: Framework for developing language model-powered applications.
 - **FAISS**: Library for efficient similarity search and clustering.
 - **PyPDF2**: PDF processing library.
-- **UnstructuredPDFLoader**: Utility for content extraction from PDFs.
 
 ### Frontend
 - **ReactJS**: Library for building user interfaces.
