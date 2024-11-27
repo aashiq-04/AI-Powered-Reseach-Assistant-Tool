@@ -212,7 +212,7 @@ h2 {
   align-items: center;
   padding: auto;
   height: 10vh;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
 .answer {
   background-color: #ccc;
@@ -221,7 +221,7 @@ h2 {
   height: 55vh;
 }
 .loading {
-  color: blue; /* Change to your preferred color */
+  color: blue;
   font-weight: bold;
 }
 
@@ -230,6 +230,6 @@ h2 {
   color: green; /* Change to your preferred color */
 }
 .error{
-  margin-top: 5px;
+  margin-top: 6px;
   color: red;
 }
