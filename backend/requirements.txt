@@ -13,4 +13,4 @@ uvicorn
 langchain_groq
 langchain_text_splitters
 pytesseract
-faiss-gpu
+faiss-cpu
